@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -5,17 +6,24 @@ public static class RunLengthEncoding
 {
     private static string EncodeGroup(int counter, char? letter) => counter > 1 ? $"{counter}{letter}" : $"{letter}";
 
-    public static string Encode(string input)
+    private static IEnumerable<char> EncodeStreaming(IEnumerable<char> input)
     {
         char? currentGroup = null;
         var counter = 0;
-        var result = new StringBuilder();
-
         foreach (var letter in input)
         {
-            if ((currentGroup != letter) & (counter > 0))
+            var hasGroupEnded = currentGroup != letter;
+            if (hasGroupEnded & (counter > 0))
             {
-                result.Append(EncodeGroup(counter, currentGroup));
+                if (counter > 1)
+                {
+                    foreach (var digit in counter.ToString())
+                    {
+                        yield return digit;
+                    }
+                }
+
+                yield return (char)currentGroup;
                 currentGroup = letter;
                 counter = 1;
             }
@@ -26,15 +34,51 @@ public static class RunLengthEncoding
             }
         }
 
-        result.Append(EncodeGroup(counter, currentGroup));
-        return result.ToString();
+        if (counter > 1)
+        {
+            foreach (var digit in counter.ToString())
+            {
+                yield return digit;
+            }
+        }
+
+        yield return (char)currentGroup;
     }
 
-    private static int takeNextCounter(string input, ref int index)
+    public static string Encode(string input) =>
+        input == "" ? "" : new string(EncodeStreaming(input.ToCharArray()).ToArray());
+
+    // public static string EncodeMemoryHungry(string input)
+    // {
+    //     char? currentGroup = null;
+    //     var counter = 0;
+    //     var result = new StringBuilder();
+    //
+    //     foreach (var letter in input)
+    //     {
+    //         var doesLetterDiffer = currentGroup != letter;
+    //         if (doesLetterDiffer & (counter > 0))
+    //         {
+    //             result.Append(EncodeGroup(counter, currentGroup));
+    //             currentGroup = letter;
+    //             counter = 1;
+    //         }
+    //         else
+    //         {
+    //             currentGroup = letter;
+    //             counter++;
+    //         }
+    //     }
+    //
+    //     result.Append(EncodeGroup(counter, currentGroup));
+    //     return result.ToString();
+    // }
+
+    private static int TakeNextCounter(string input, ref int index)
     {
-        var number = new string(input.TakeWhile(char.IsDigit).ToArray());
-        index += number.Length;
-        return number == "" ? 1 : int.Parse(number);
+        var digits = new string(input.TakeWhile(char.IsDigit).ToArray());
+        index += digits.Length;
+        return digits == "" ? 1 : int.Parse(digits);
     }
 
     public static string Decode(string input)
@@ -43,7 +87,7 @@ public static class RunLengthEncoding
 
         for (var index = 0; index < input.Length; index++)
         {
-            var counter = takeNextCounter(input.Substring(index), ref index);
+            var counter = TakeNextCounter(input.Substring(index), ref index);
             var letter = input.Substring(index).First();
             result.Append(letter, counter);
         }
