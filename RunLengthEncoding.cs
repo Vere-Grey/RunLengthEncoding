@@ -30,7 +30,7 @@ public static class RunLengthEncoding
         return result.ToString();
     }
 
-    private static int parseNextMultiplier(string input, ref int index)
+    private static int takeNextCounter(string input, ref int index)
     {
         var number = new string(input.TakeWhile(char.IsDigit).ToArray());
         index += number.Length;
@@ -43,9 +43,9 @@ public static class RunLengthEncoding
 
         for (var index = 0; index < input.Length; index++)
         {
-            var multiplier = parseNextMultiplier(input.Substring(index), ref index);
+            var counter = takeNextCounter(input.Substring(index), ref index);
             var letter = input.Substring(index).First();
-            result.Append(letter, multiplier);
+            result.Append(letter, counter);
         }
 
         return result.ToString();
