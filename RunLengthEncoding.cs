@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 public static class RunLengthEncoding
 {
@@ -31,6 +29,7 @@ public static class RunLengthEncoding
                 {
                     yield return character;
                 }
+
                 currentGroup = letter;
                 counter = 1;
             }
@@ -56,19 +55,19 @@ public static class RunLengthEncoding
     private static IEnumerable<char> DecodeStreaming(IEnumerable<char> input)
     {
         string? counterBuilder = null;
-        var inputEnumenator = input.GetEnumerator();
-        while (inputEnumenator.MoveNext())
+        var inputEnumerator = input.GetEnumerator();
+        while (inputEnumerator.MoveNext())
         {
-            if(char.IsDigit(inputEnumenator.Current))
+            if (char.IsDigit(inputEnumerator.Current))
             {
-                counterBuilder += inputEnumenator.Current;
+                counterBuilder += inputEnumerator.Current;
                 continue;
             }
 
             var counter = int.Parse(counterBuilder ?? "1");
             for (var i = 0; i < counter; i++)
             {
-                yield return inputEnumenator.Current;
+                yield return inputEnumerator.Current;
             }
 
             counterBuilder = null;
